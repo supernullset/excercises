@@ -623,4 +623,79 @@ numbers smaller, and faster")
   (display (ex1-36))
   (newline)
 
+  (define (ex1-37a)
+    #| An infinite continued fraction is an expression of the form
+
+    f = N 1 D 1 + N 2 D 2 + N 3 D 3 + … .
+
+    As an example, one can show that the infinite continued fraction
+    expansion with the N i and the D i all equal to 1 produces 1 / φ ,
+    where φ is the golden ratio (described in 1.2.2). One way to
+    approximate an infinite continued fraction is to truncate the
+    expansion after a given number of terms. Such a truncation—a so-called
+    finite continued fraction k-term finite continued fraction—has the
+    form
+
+    N 1 D 1 + N 2 ⋱ + N k D k .
+
+    Suppose that n and d are procedures of one argument (the term
+    index i ) that return the N i and D i of the terms of the continued
+    fraction. Define a procedure cont-frac such that evaluating (cont-frac
+    n d k) computes the value of the k -term finite continued
+    fraction. Check your procedure by approximating 1 / φ using
+
+    (cont-frac (lambda (i) 1.0)
+    (lambda (i) 1.0)
+    k)
+
+    for successive values of k. How large must you make k in order to
+    get an approximation that is accurate to 4 decimal places? |#
+
+
+    (define (cont-frac-wrong n d k)
+      ;; THIS IS INCORRECT BECAUSE ITS COUNTING UP FROM 1 WHICH YIELDS
+      ;; A DIFFERENT EVALUATION ORDER
+      (if (= k 1)
+          (/ (n k) (d k))
+          (let ((nk (n k))
+                (dk (d k)))
+            (/ nk (+ dk (cont-frac n d (- k 1)))))))
+
+    (define (cont-frac n d k)
+      ;; in order to build this up correctly, you have to go from 1 -> k
+      (define (recur i)
+        (if (> i k)
+            0
+            (/ (n i) (+ (d i) (recur (+ i 1))))))
+      (recur 1))
+
+
+    (cont-frac (lambda (i) 1.0)
+    (lambda (i) 1.0)
+    11))
+
+  (display "ex1-37a:  ")
+  (display (ex1-37a))
+  (newline)
+  (display "11 iterations yields 0.6180555555555556 - 4 decimals of precision")
+  (newline)
+
+;; TODO: I cant figure this one out
+   (define (ex1-37b)
+     (define (cont-frac-iter n d k)
+       (define (iter i acc)
+         (if (< i 1)
+             acc
+             (iter (- i 1) (/ (n i) (+ (d i) acc)))))
+       (iter k 0))
+
+     (cont-frac-iter (lambda (i) 1.0)
+                     (lambda (i) 1.0)
+                     11))
+
+  (display "ex1-37b:  ")
+  (display (ex1-37b))
+  (display "11 iterations yields 0.6180555555555556 - 4 decimals of precision")
+  (newline)
+
   (display "----END OF SECTION----"))
