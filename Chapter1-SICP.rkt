@@ -698,4 +698,40 @@ numbers smaller, and faster")
   (display "11 iterations yields 0.6180555555555556 - 4 decimals of precision")
   (newline)
 
+  (define (ex1-38)
+     (define (cont-frac-iter n d k)
+       (define (iter i acc)
+         (if (< i 1)
+             acc
+             (iter (- i 1) (/ (n i) (+ (d i) acc)))))
+       (iter k 0))
+
+    (define (euler-term i)
+      ;; Done on pen and paper, but basically There is a pattern here
+      ;; based around 3. So I first constructed an if statement that
+      ;; gave me a propper pattern of 1s and not 1s, and I backfilled
+      ;; a transform between the index and value at that index
+
+      (if (= (modulo i 3) 2)
+          (* 2 (/ (+ i 1) 3))
+          1))
+
+    (define (series-print n)
+      (define (iter i)
+        (display (euler-term i))
+        (newline)
+        (if (> i n)
+            0
+            (iter (+ i 1))))
+      (iter 1))
+
+;;    (series-print 10)
+    (cont-frac-iter (lambda (i) 1.0)
+                    euler-term
+                    10))
+
+  (display "ex1-38:  ")
+  (display (ex1-38))
+  (newline)
+
   (display "----END OF SECTION----"))
