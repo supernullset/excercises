@@ -559,9 +559,6 @@ numbers smaller, and faster")
                (search f midpoint pos-point))
               (else midpoint))))))
 
-  (define (close-enough? x y)
-    (< (abs (- x y)) 0.001))
-
   (define (half-interval-method f a b)
     (let ((a-value (f a))
           (b-value (f b)))
@@ -580,6 +577,9 @@ numbers smaller, and faster")
   (newline)
 
   (define tolerance 0.00001)
+
+  (define (close-enough? x y)
+    (< (abs (- x y)) 0.001))
 
   (define (fixed-point f first-guess)
     (define (close-enough? v1 v2)
@@ -734,4 +734,153 @@ numbers smaller, and faster")
   (display (ex1-38))
   (newline)
 
+  (define (ex1-39)
+     (define (cont-frac-iter n d k)
+       (define (iter i acc)
+         (if (< i 1)
+             acc
+             (iter (- i 1) (/ (n i) (+ (d i) acc)))))
+       (iter k 0))
+
+
+    (cont-frac-iter (lambda (x)
+                     (if (= 1 x)
+                         x
+                         (- (* x x))))
+
+                   (lambda (i) (- (* 2 i) 1))
+                    10))
+
+  (display "ex1-39:  ")
+  (display (ex1-39))
+  (newline)
+
+  (display "----END OF SECTION----"))
+
+(define (section-1.3.4)
+  (display "section 1.3.4")
+  (newline)
+
+  (define (average-damp f)
+    (lambda (x) (average x (f x))))
+
+  (display ((average-damp square) 10))
+  (newline)
+
+  (define (close-enough? x y)
+    (< (abs (- x y)) 0.001))
+
+  (define tolerance 0.00001)
+
+  (define (fixed-point f first-guess)
+    (define (close-enough? v1 v2)
+      (< (abs (- v1 v2))
+         tolerance))
+    (define (try guess)
+      (let ((next (f guess)))
+        (display "guess: ")
+        (display next)
+        (newline)
+        (if (close-enough? guess next)
+            next
+            (try next))))
+    (try first-guess))
+
+  (define (sqrt-fixed-point x)
+    (fixed-point (average-damp (lambda (y) (/ x y))) 1.0))
+
+  (define (cube-root x)
+    (fixed-point (average-damp (lambda (y) (/ x (square y)))) 1.0))
+
+  (define (deriv-with-tolerance g dx)
+    (lambda (x)
+      (/ (- (g (+ x dx)) (g x))
+         dx)))
+
+  (define (deriv g)
+    (let ((dx 0.00001))
+      (deriv-with-tolerance g dx)))
+
+  (define (cube x) (* x x x ))
+
+  (display ((deriv cube) 5))
+  (newline)
+
+  (define (newton-transform g)
+    (lambda (x)
+      (- x (/ (g x) ((deriv g) x)))))
+
+  (define (newtons-method g guess)
+    (fixed-point (newton-transform g) guess))
+
+  (define (sqrt x)
+    (newtons-method (lambda (y) (- (square y) x)) 1.0))
+
+  (define (fixed-point-of-transform g transform guess)
+    (fixed-point))
+
+  (display "----END OF SECTION----"))
+
+
+(define (section-2.1)
+  (display "section 2.1")
+  (newline)
+
+  ;; Ex 2.1 made this handle negative sign as well
+
+  (define (make-rat n d)
+    (let* ((g (gcd n d))
+          (denom-sign (if (or (< n 0) (< d 0)) - +))
+          (numer-sign (if (and (< 0 (denom-sign n)) (< d 0)) + -)))
+      (cons (numer-sign (/ n g)) (denom-sign (/ d g)))))
+
+  (define (numer r)
+    (car r))
+
+  (define (denom r)
+    (cdr r))
+
+  (define (add-rat x y)
+    (make-rat (+ (* (numer x) (denom y))
+                 (* (denom x) (numer y)))
+              (* (denom x) (denom y))))
+
+  (define (sub-rat x y)
+    (make-rat (- (* (numer x) (denom y))
+                 (* (numer y) (denom x)))
+              (* (denom x) (denom y))))
+
+  (define (mul-rat x y)
+    (make-rat (* (numer x) (numer y))
+              (* (denom y) (denom x))))
+
+  (define (div-rat x y)
+    (make-rat (* (numer x) (denom y))
+              (* (numer y) (denom x))))
+
+  (define (equal-rat? x y)
+    (= (* (numer x) (denom y))
+       (* (numer y) (denom x))))
+
+  (define (print-rat x)
+    (newline)
+    (display (numer x))
+    (display "/")
+    (display (denom x)))
+
+  (define one-half (make-rat 1 2))
+
+  (print-rat one-half)
+
+  (define one-third (make-rat 1 3))
+
+  (print-rat (add-rat one-half one-third))
+
+  (print-rat (mul-rat one-half one-third))
+
+  (print-rat (add-rat one-third one-third))
+
+  (print-rat (make-rat (- 1) (- 7)))
+
+  (newline)
   (display "----END OF SECTION----"))
