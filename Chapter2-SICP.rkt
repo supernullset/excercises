@@ -1,4 +1,5 @@
 #lang sicp
+(#%require sicp-pict)
 
 (display "section 2.1")
 (newline)
@@ -67,8 +68,8 @@
 (define (y-point p)
   (cdr p))
 
-(define (make-segment p1 p2)
-  (cons p1 p2))
+;;(define (make-segment p1 p2)
+;;  (cons p1 p2))
 
 (define (start-segment s)
   (car s))
@@ -221,25 +222,113 @@
 (define deep-rev-x (list (list 1 2) (list 3 4)))
 
 (define (deep-reverse l)
-  (if (null? l)
-      l
-      (map reverse (reverse l))))
+  (define (iter acc l)
+    (cond
+      ;; test if the list is a list
+      ((null? l) acc)
+      ;; test if the head is also a list
+      ((pair? (car l)) (iter (cons (reverse (car l)) acc) (cdr l)))
+      (else (cons l acc))
+      )
+    )
+  (iter (list) l))
 
+(deep-reverse deep-rev-x)
 
 ;; 2.28
 (define tree-list (list (list 1 2) (list 3 4)))
 
+;; (fringe x)
+;; (1 2 3 4)
+;;
+;; (fringe (list x x))
+;; (1 2 3 4 1 2 3 4)
+
 (define left car)
 (define right cdr)
 
-;; this one is silly TODO
 (define (fringe tree)
-  (display tree)(newline)
-  (let ((left (car tree))
-        (right (cdr tree)))
-   (if (null? tree)
-      '()
-      (cons (fringe left) (fringe right)))))
+  (cond ((null? tree) nil)
+        ((pair? tree) (append (fringe (car tree)) (fringe (cdr tree))))
+        (else (list tree))))
+
+(define (make-mobile left right)
+  (list left right))
+
+(define (make-branch length structure)
+  (list length structure))
+
+(define test-mobile (make-mobile 1 2))
+(define test-mobile2 (make-mobile 1 test-mobile))
+
+(define (left-branch mobile) car)
+(define (right-branch mobile) cdr)
+(define (branch-length mobile)
+  (reduce (lambda (branch)) 0 mobile))
+
+;; TODO: more intermediate exercises
+;; Use einstein instead of wave
+
+(define einstein2 (beside einstein (flip-vert einstein)))
+
+(define (square-of-four tl tr bl br)
+  (lambda (painter)
+    (let ((top (beside (tl painter)
+                       (tr painter)))
+          (bottom (beside (bl painter)
+                          (br painter))))
+      (below bottom top))))
+
+(define (square-limit painter n)
+  (let ((combine4
+         (square-of-four flip-horiz
+                         identity
+                         rotate180
+                         flip-vert)))
+    (combine4 (corner-split painter n))))
+
+(define (flipped-pairs painter)
+  (let ((combine4
+         (square-of-four identity
+                         flip-vert
+                         identity
+                         flip-vert)))
+    (combine4 painter)))
+
+(define einstein4 (flipped-pairs einstein))
+
+(define (right-split painter n)
+  (if (= n 0)
+      painter
+      (let ((smaller (right-split painter
+                                  (- n 1))))
+        (beside painter
+                (below smaller smaller)))))
+
+;; TODO: 2.45
+
+(define (up-split painter n)
+  (if (= n 0)
+      painter
+      (let ((smaller (right-split painter (- n 1))))
+        (below painter (beside smaller smaller)))))
+
+(define (corner-split painter n)
+  (if (= n 0)
+      painter
+      (let ((up (up-split painter (- n 1)))
+            (right (right-split painter
+                                (- n 1))))
+        (let ((top-left (beside up up))
+              (bottom-right (below right
+                                   right))
+              (corner (corner-split painter
+                                    (- n 1))))
+          (beside (below painter top-left)
+                  (below bottom-right
+                         corner))))))
+
+
 
 (newline)
 (display "----END OF SECTION----")
