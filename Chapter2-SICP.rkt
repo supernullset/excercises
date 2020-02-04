@@ -1,6 +1,5 @@
 #lang sicp
 (#%require sicp-pict)
-
 (display "section 2.1")
 (newline)
 
@@ -252,19 +251,36 @@
         ((pair? tree) (append (fringe (car tree)) (fringe (cdr tree))))
         (else (list tree))))
 
+;; 2.29
 (define (make-mobile left right)
   (list left right))
 
 (define (make-branch length structure)
   (list length structure))
 
-(define test-mobile (make-mobile 1 2))
-(define test-mobile2 (make-mobile 1 test-mobile))
+(define test-mobile (make-mobile (make-branch 1 1) (make-branch 2 1)))
+(define test-mobile2 (make-mobile (make-branch 1 2) (make-branch 1 test-mobile)))
 
-(define (left-branch mobile) car)
-(define (right-branch mobile) cdr)
-(define (branch-length mobile)
-  (reduce (lambda (branch)) 0 mobile))
+(define left-branch car)
+
+(define right-branch (lambda (x) (car (cdr x))))
+
+;; returns length of branch
+(define branch-length car)
+
+;; returns structure of branch
+(define branch-structure (lambda (x) (car (cdr x))))
+
+;; (+ (branch-length (left-branch mobile)) (branch-length (right-branch mobile)))
+
+(define (total-weight mobile)
+  (if (not (pair? mobile)) mobile
+      (+ (total-weight (branch-structure (left-branch mobile)))
+         (total-weight (branch-structure (right-branch mobile))))))
+
+
+(define (balanced? mobile)
+  (= (left-torque mobile) (right-torque mobile)))
 
 ;; TODO: more intermediate exercises
 ;; Use einstein instead of wave
