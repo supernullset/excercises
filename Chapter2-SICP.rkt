@@ -130,7 +130,7 @@
              (cons (car inner) acc)
              acc))))
 
-  (filter-inner l '()))
+  (reverse (filter-inner l '())))
 
 
 
@@ -253,34 +253,126 @@
 
 ;; 2.29
 (define (make-mobile left right)
-  (list left right))
+  (cons left right))
 
 (define (make-branch length structure)
-  (list length structure))
+  (cons length structure))
 
-(define test-mobile (make-mobile (make-branch 1 1) (make-branch 2 1)))
-(define test-mobile2 (make-mobile (make-branch 1 2) (make-branch 1 test-mobile)))
+(define test-mobile (make-mobile (make-branch 1 1) (make-branch 2 10)))
+(define test-mobile2 (make-mobile (make-branch 1 20) (make-branch 1 test-mobile)))
 
 (define left-branch car)
 
-(define right-branch (lambda (x) (car (cdr x))))
+(define right-branch cdr)
 
 ;; returns length of branch
 (define branch-length car)
 
 ;; returns structure of branch
-(define branch-structure (lambda (x) (car (cdr x))))
+(define branch-structure cdr)
 
-;; (+ (branch-length (left-branch mobile)) (branch-length (right-branch mobile)))
+(define (branch-weight branch)
+  (cond
+    ((not (pair? (branch-structure branch))) (branch-structure branch))
+    ((pair? (branch-structure branch)) (branch-weight (branch-structure branch)))))
 
 (define (total-weight mobile)
-  (if (not (pair? mobile)) mobile
-      (+ (total-weight (branch-structure (left-branch mobile)))
-         (total-weight (branch-structure (right-branch mobile))))))
+  (cond
+    ((null? mobile) 0)
+    (else (+ (branch-weight (left-branch mobile))
+             (branch-weight (right-branch mobile))))))
 
+
+(define (branch-torque branch)
+  (cond ((not (pair? (branch-structure branch))) (* (branch-length branch) (branch-structure branch)))
+        (else (branch-torque (branch-structure branch)))))
 
 (define (balanced? mobile)
-  (= (left-torque mobile) (right-torque mobile)))
+  (= (branch-torque (left-branch mobile)) (branch-torque (right-branch mobile))))
+
+;; 2.30
+
+;; (square-tree
+;;  (list 1
+;;        (list 2 (list 3 4) 5)
+;;        (list 6 7)))
+;; (1 (4 (9 16) 25) (36 49))
+
+(define test-tree
+  (list 1
+        (list 2 (list 3 4) 5)
+        (list 6 7)))
+
+(define (square-tree tree)
+  (cond ((null? tree) '())
+        ((not (pair? tree)) (* tree tree))
+        (else (cons (square-tree (car tree))
+                    (square-tree (cdr tree))))))
+
+(define (square-tree-map tree)
+  (map (lambda (t)
+         (if (pair? t)
+             (square-tree-map t)
+             (* t t )))
+       tree))
+
+;; 2.31
+(define (tree-map proc tree)
+  (map (lambda (t)
+         (if (pair? t)
+             (tree-map proc t)
+             (proc t)))
+       tree))
+
+(define (square-tree-gen tree)
+  (tree-map square tree))
+
+;; 2.32
+
+(define (subsets s)
+  (if (null? s)
+      (list nil)
+      (let ((rest (subsets (cdr s))))
+        (append rest (map (lambda (x) (cons (car s) x)) rest)))))
+
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      nil
+      (cons low
+            (enumerate-interval
+             (+ low 1)
+             high))))
+
+(define (enumerate-tree tree)
+  (cond ((null? tree) nil)
+        ((not (pair? tree)) (list tree))
+        (else (append
+               (enumerate-tree (car tree))
+               (enumerate-tree (cdr tree))))))
+
+
+(define accumulate reduce)
+
+;; 2.33
+(define (map2 p sequence)
+  (accumulate (lambda (x y) (append (p y) x))
+              nil sequence))
+
+(define (append2 seq1 seq2)
+  (accumulate cons seq1 seq2))
+
+(define (length2 sequence)
+  (accumulate + 0 sequence))
+
+;; 2.34
+(define (horner-eval x coefficient-sequence)
+  (accumulate
+   (lambda (this-coeff higher-terms)(+ this-coeff (* x higher-terms)))
+   0
+   coefficient-sequence))
+
+;; (horner-eval 2 (list 1 3 0 5 0 1))
 
 ;; TODO: more intermediate exercises
 ;; Use einstein instead of wave
